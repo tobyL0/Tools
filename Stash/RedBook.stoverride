@@ -16,7 +16,7 @@ http:
 
   url-rewrite:
     # 水印配置
-    - ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark reject-img
+    - ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark reject-200
 
     # surprisebox
     - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action) reject-dict
