@@ -14,97 +14,194 @@ http:
     - rec.xiaohongshu.com
     - www.xiaohongshu.com
 
-  url-rewrite:
-    # 水印配置，原 Surge 是 tiny-gif，这里用 reject-img 更接近
-    - ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark - reject-img
+  mock:
+    # watermark tiny-gif
+    - match: '^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark'
+      status-code: 200
+      base64: 'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='
+      headers:
+        Content-Type: image/gif
 
     # surprisebox
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action) - reject-dict
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action)'
+      status-code: 200
+      text: '{}'
+      headers:
+        Content-Type: application/json
 
-    # 营销弹窗
-    - ^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\? - reject-dict
+    # marketing box
+    - match: '^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\?'
+      status-code: 200
+      text: '{}'
+      headers:
+        Content-Type: application/json
 
-    # 引导横幅
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide) - reject-dict
+    # guide / note guide
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide)'
+      status-code: 200
+      text: '{}'
+      headers:
+        Content-Type: application/json
 
-    # 广告资源 / hey_gallery
-    - ^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery) - reject-dict
+    # ads resource / hey gallery
+    - match: '^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery)'
+      status-code: 200
+      text: '{}'
+      headers:
+        Content-Type: application/json
 
   script:
-    - name: 移除整体配置 ui
-      type: http-response
+    # 原 Surge Body Rewrite JQ 转 Stash JS
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$'
+      name: xhs-local-jq
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除开屏广告 config
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$'
+      name: xhs-local-jq
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除开屏广告 splash_config
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint'
+      name: xhs-local-jq
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除信息流广告 followfeed
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\?'
+      name: xhs-local-jq
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除信息流广告 homefeed
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/longpress'
+      name: xhs-local-jq
+      type: response
       require-body: true
-      pattern: ^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除搜索页广告
-      type: http-response
+    # 原 Script
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除详情页小部件和关注页推荐
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除详情页感兴趣的人
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除猜你想搜
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https?:\/\/edith\.xiaohongshu\.com\/api\/sns\/v\d\/note\/widgets
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除图片和实况照片水印
-      type: http-response
+    - match: '^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除图片和视频水印
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除视频水印
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
 
-    - name: 移除评论区实况照片水印
-      type: http-response
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?'
+      name: xhs-main
+      type: response
       require-body: true
-      pattern: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/interaction\/comment\/video\/download|v5\/note\/comment\/list)
-      script-path: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
+
+    - match: '^https?:\/\/edith\.xiaohongshu\.com\/api\/sns\/v\d\/note\/widgets'
+      name: xhs-main
+      type: response
+      require-body: true
+
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)'
+      name: xhs-main
+      type: response
+      require-body: true
+
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)'
+      name: xhs-main
+      type: response
+      require-body: true
+
+    - match: '^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)'
+      name: xhs-main
+      type: response
+      require-body: true
+
+    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/interaction\/comment\/video\/download|v5\/note\/comment\/list)'
+      name: xhs-main
+      type: response
+      require-body: true
+
+script-providers:
+  xhs-main:
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
+    interval: 86400
+
+  xhs-local-jq:
+    interval: 86400
+    payload: |
+      const url = $request.url;
+      let obj;
+
+      try {
+        obj = JSON.parse($response.body || '{}');
+      } catch (e) {
+        $done({});
+      }
+
+      try {
+        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$/.test(url)) {
+          if (obj && Object.prototype.hasOwnProperty.call(obj, 'data')) {
+            obj.data = {};
+          }
+        }
+
+        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$/.test(url)) {
+          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'items')) {
+            obj.data.items = [];
+          }
+        }
+
+        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint/.test(url)) {
+          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'hint_words')) {
+            obj.data.hint_words = [];
+          }
+        }
+
+        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\?/.test(url)) {
+          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'queries')) {
+            obj.data.queries = [];
+          }
+          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'hint_word')) {
+            obj.data.hint_word = {};
+          }
+        }
+
+        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/longpress/.test(url)) {
+          if (
+            obj &&
+            obj.data &&
+            obj.data.image_press_result &&
+            Object.prototype.hasOwnProperty.call(obj.data.image_press_result, 'anchor_detail')
+          ) {
+            delete obj.data.image_press_result.anchor_detail;
+          }
+        }
+
+        $done({
+          body: JSON.stringify(obj)
+        });
+      } catch (e) {
+        $done({});
+      }
