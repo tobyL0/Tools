@@ -1,201 +1,81 @@
 name: 小红书去广告
-desc: 过滤信息流推广，移除笔记和评论区图片视频以及 live 图水印，移除评论区表情包水印和下载限制。
-author: RuCu6, fmz200, wish
-category: 去广告
-date: 2025-11-10 15:24:00
-
-rules:
-  - AND,((PROTOCOL,QUIC),(DOMAIN-SUFFIX,xiaohongshu.com)),REJECT
-
+desc: |-
+    过滤信息流推广，移除图片及视频水印，如有异常，请先清除缓存再尝试。
+author: RuCu6[https://github.com/RuCu6],fmz200[https://github.com/fmz200]
+icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/RedPaper.png
+category: iKeLee
+openUrl: https://apps.apple.com/app/id741292507
+tag: 去广告
+loon_version: 3.2.4(787)
+homepage: https://github.com/luestr/ProxyResource/blob/main/README.md
+date: '2025-02-28 19:49:27'
 http:
-  mitm:
-    - ci.xiaohongshu.com
-    - edith.xiaohongshu.com
-    - rec.xiaohongshu.com
-    - www.xiaohongshu.com
-
-  mock:
-    - match: '^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark'
-      status-code: 200
-      base64: 'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='
-      headers:
-        Content-Type: image/gif
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action)'
-      status-code: 200
-      text: '{}'
-      headers:
-        Content-Type: application/json
-
-    - match: '^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\?'
-      status-code: 200
-      text: '{}'
-      headers:
-        Content-Type: application/json
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide)'
-      status-code: 200
-      text: '{}'
-      headers:
-        Content-Type: application/json
-
-    - match: '^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery)'
-      status-code: 200
-      text: '{}'
-      headers:
-        Content-Type: application/json
-
-  script:
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$'
-      name: xhs-local-jq
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$'
-      name: xhs-local-jq
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint'
-      name: xhs-local-jq
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\?'
-      name: xhs-local-jq
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/longpress'
-      name: xhs-local-jq
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https?:\/\/edith\.xiaohongshu\.com\/api\/sns\/v\d\/note\/widgets'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)'
-      name: xhs-main
-      type: response
-      require-body: true
-
-    - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/interaction\/comment\/video\/download|v5\/note\/comment\/list)'
-      name: xhs-main
-      type: response
-      require-body: true
-
+    mitm:
+        - edith.xiaohongshu.com
+        - rec.xiaohongshu.com
+        - www.xiaohongshu.com
+    force-http-engine:
+        - edith.xiaohongshu.com
+        - rec.xiaohongshu.com
+        - www.xiaohongshu.com
+    url-rewrite:
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action) - reject-dict
+        - ^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\? - reject-dict
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide) - reject-dict
+        - ^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery) - reject-dict
+    body-rewrite:
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$ response-json-replace data {}
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$ response-json-replace data.items []
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint response-json-replace data.hint_words []
+        - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\? response-json-replace data.queries [] data.hint_word {}
+    script:
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
+        -   match: ^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)
+            name: 移除图片和实况照片水印_26
+            type: response
+            require-body: true
 script-providers:
-  xhs-main:
-    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
-    interval: 86400
-
-  xhs-local-jq:
-    interval: 86400
-    payload: |
-      const url = $request.url;
-      let obj = {};
-
-      try {
-        obj = JSON.parse($response.body || '{}');
-      } catch (e) {
-        $done({});
-      }
-
-      try {
-        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$/.test(url)) {
-          if (obj && Object.prototype.hasOwnProperty.call(obj, 'data')) {
-            obj.data = {};
-          }
-        }
-
-        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$/.test(url)) {
-          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'items')) {
-            obj.data.items = [];
-          }
-        }
-
-        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint/.test(url)) {
-          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'hint_words')) {
-            obj.data.hint_words = [];
-          }
-        }
-
-        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\?/.test(url)) {
-          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'queries')) {
-            obj.data.queries = [];
-          }
-
-          if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'hint_word')) {
-            obj.data.hint_word = {};
-          }
-        }
-
-        if (/^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/longpress/.test(url)) {
-          if (
-            obj &&
-            obj.data &&
-            obj.data.image_press_result &&
-            Object.prototype.hasOwnProperty.call(obj.data.image_press_result, 'anchor_detail')
-          ) {
-            delete obj.data.image_press_result.anchor_detail;
-          }
-        }
-
-        $done({
-          body: JSON.stringify(obj)
-        });
-      } catch (e) {
-        $done({});
-      }
+    移除图片和实况照片水印_26:
+        url: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
+        interval: 86400
+rules:
+    - AND,((PROTOCOL,QUIC),(DOMAIN-SUFFIX,xiaohongshu.com)),REJECT
