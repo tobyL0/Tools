@@ -1,10 +1,5 @@
 name: 小红书去广告
-desc: |-
-  过滤信息流推广，移除图片及视频水印，如有异常，请先清除缓存再尝试。
-author: RuCu6, fmz200
-icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/RedPaper.png
-category: 去广告
-date: "2025-02-28 19:49:27"
+desc: 小红书去广告
 
 rules:
   - AND,((PROTOCOL,QUIC),(DOMAIN-SUFFIX,xiaohongshu.com)),REJECT
@@ -16,94 +11,20 @@ http:
     - rec.xiaohongshu.com
     - www.xiaohongshu.com
 
-  force-http-engine:
-    - edith.xiaohongshu.com
-    - rec.xiaohongshu.com
-    - www.xiaohongshu.com
+  map-local:
+    - ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark data-type=tiny-gif status-code=200
 
-  url-rewrite:
-    - ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark reject-200
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action) reject-dict
-    - ^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\? reject-dict
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide) reject-dict
-    - ^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery) reject-dict
+    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
-  body-rewrite:
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$ response-json-replace data {}
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$ response-json-replace data.items []
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint response-json-replace data.hint_words []
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\? response-json-replace data.queries []
-    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\? response-json-replace data.hint_word {}
+    - ^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\? data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+    - ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+    - ^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
 
   script:
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)
-      name: xhs_remove_image_livephoto_watermark
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
     - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?
       name: xhs_remove_ui_config
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?
-      name: xhs_remove_system_config
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config
-      name: xhs_remove_splash_config
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)
-      name: xhs_remove_note_widgets
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?
-      name: xhs_remove_followfeed_ads
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?
-      name: xhs_remove_follow_recommend
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?
-      name: xhs_remove_homefeed_ads
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?
-      name: xhs_remove_search_ads
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)
-      name: xhs_remove_note_feed_watermark
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)
-      name: xhs_remove_video_watermark
-      type: response
-      require-body: true
-      script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
-
-    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/interaction\/comment\/video\/download|v5\/note\/comment\/list)
-      name: xhs_remove_comment_livephoto_watermark
       type: response
       require-body: true
       script-path: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/RedPaper_remove_ads.js
