@@ -15,35 +15,30 @@ http:
     - www.xiaohongshu.com
 
   mock:
-    # watermark tiny-gif
     - match: '^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark'
       status-code: 200
       base64: 'R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=='
       headers:
         Content-Type: image/gif
 
-    # surprisebox
     - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action)'
       status-code: 200
       text: '{}'
       headers:
         Content-Type: application/json
 
-    # marketing box
     - match: '^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\?'
       status-code: 200
       text: '{}'
       headers:
         Content-Type: application/json
 
-    # guide / note guide
     - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide)'
       status-code: 200
       text: '{}'
       headers:
         Content-Type: application/json
 
-    # ads resource / hey gallery
     - match: '^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery)'
       status-code: 200
       text: '{}'
@@ -51,7 +46,6 @@ http:
         Content-Type: application/json
 
   script:
-    # 原 Surge Body Rewrite JQ 转 Stash JS
     - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$'
       name: xhs-local-jq
       type: response
@@ -77,7 +71,6 @@ http:
       type: response
       require-body: true
 
-    # 原 Script
     - match: '^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?'
       name: xhs-main
       type: response
@@ -152,7 +145,7 @@ script-providers:
     interval: 86400
     payload: |
       const url = $request.url;
-      let obj;
+      let obj = {};
 
       try {
         obj = JSON.parse($response.body || '{}');
@@ -183,6 +176,7 @@ script-providers:
           if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'queries')) {
             obj.data.queries = [];
           }
+
           if (obj && obj.data && Object.prototype.hasOwnProperty.call(obj.data, 'hint_word')) {
             obj.data.hint_word = {};
           }
