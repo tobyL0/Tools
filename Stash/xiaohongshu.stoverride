@@ -1,0 +1,168 @@
+name: 小红书去广告
+desc: 过滤信息流推广，移除笔记和评论区图片视频以及 live 图水印，移除评论区表情包水印和下载限制。如有异常，请先清除缓存或重装再尝试。
+author: RuCu6, fmz200, wish
+category: 去广告
+date: "2025-11-10 15:24:00"
+
+rules:
+  - AND,((PROTOCOL,QUIC),(DOMAIN-SUFFIX,xiaohongshu.com)),REJECT
+
+http:
+  mitm:
+    - ci.xiaohongshu.com
+    - edith.xiaohongshu.com
+    - rec.xiaohongshu.com
+    - www.xiaohongshu.com
+
+  # Surge [Map Local] 转 Stash mock
+  mock:
+    # 水印接口：返回 1px GIF，等价于 Surge data-type=tiny-gif
+    - match: ^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark
+      base64: R0lGODlhAQABAPAAAP///wAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==
+      status-code: 200
+      headers:
+        Content-Type: image/gif
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/surprisebox\/(?:get_style|open|submit_action)
+      text: '{}'
+      status-code: 200
+      headers:
+        Content-Type: application/json
+
+    - match: ^https:\/\/www\.xiaohongshu\.com\/api\/marketing\/box\/trigger\?
+      text: '{}'
+      status-code: 200
+      headers:
+        Content-Type: application/json
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/guide\/user_banner|v3\/note\/guide)
+      text: '{}'
+      status-code: 200
+      headers:
+        Content-Type: application/json
+
+    - match: ^https:\/\/www\.xiaohongshu\.com\/api\/sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery)
+      text: '{}'
+      status-code: 200
+      headers:
+        Content-Type: application/json
+
+  # Surge [Body Rewrite] 转 Stash 脚本
+  script:
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$
+      name: xhs_json_rewrite
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$
+      name: xhs_json_rewrite
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint
+      name: xhs_json_rewrite
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\?
+      name: xhs_json_rewrite
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/longpress
+      name: xhs_json_rewrite
+      type: response
+      require-body: true
+      timeout: 10
+
+    # Surge [Script] 转 Stash script
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system\/service\/ui\/config\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/system_service\/config\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/system_service\/splash_config
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/followfeed\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/(?:edith|rec)\.xiaohongshu\.com\/api\/sns\/v6\/homefeed\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v10\/search\/notes\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v2\/(?:note\/widgets|user\/followings\/followfeed)
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v5\/recommend\/user\/follow_recommend\?
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https?:\/\/edith\.xiaohongshu\.com\/api\/sns\/v\d\/note\/widgets
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/note\/(?:imagefeed|live_photo\/save)
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v2\/note\/feed|v3\/note\/videofeed)
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/(?:edith|rec|www)\.xiaohongshu\.com\/api\/sns\/(?:v4\/note\/videofeed|v10\/note\/video\/save)
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+    - match: ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/interaction\/comment\/video\/download|v5\/note\/comment\/list)
+      name: xhs_remove_ads
+      type: response
+      require-body: true
+      timeout: 10
+
+script-providers:
+  xhs_remove_ads:
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Scripts/xiaohongshu/xiaohongshu.js
+    interval: 86400
+
+  xhs_json_rewrite:
+    url: https://raw.githubusercontent.com/tobyL0/Tools/refs/heads/master/Stash/xhs_json_rewrite.js
+    interval: 86400
